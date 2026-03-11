@@ -99,12 +99,26 @@ public class Player : MonoBehaviour
             }
 
             
+            // Determine shooting direction. Prefer firePoint's up if available (allows rotated fire points).
+            Vector2 shootDirection = Vector2.up;
+            if (firePoint != null)
+            {
+                // firePoint.up is a Vector3; convert to Vector2
+                shootDirection = new Vector2(firePoint.up.x, firePoint.up.y);
+            }
+
             GameObject bullet = Instantiate(bulletPrefab, spawnPosition, Quaternion.identity);
             Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
 
             if (bulletRb != null)
             {
-                bulletRb.linearVelocity = Vector2.right * bulletForce; 
+                // Apply velocity in the chosen direction
+                bulletRb.linearVelocity = shootDirection.normalized * bulletForce;
+
+                // Rotate the bullet to face the travel direction.
+                // This assumes the bullet sprite's forward is to the right (+X). If your sprite faces up, add -90f offset.
+                float angle = Mathf.Atan2(shootDirection.y, shootDirection.x) * Mathf.Rad2Deg;
+                bullet.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
             }
             else
             {
